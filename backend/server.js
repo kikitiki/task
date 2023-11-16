@@ -89,20 +89,50 @@ app.get("/product/:id", (req, res) => {
       return res.status(200).json({ product: result[0] });
     });
   });
-  // const id = req.params.id;
-  // const getProduct = "SELECT * FROM products WHERE id = ?";
+});
 
-  // connection.query(getProduct, [id], (err, result) => {
-  //   connection.release();
+app.post("/product", (req, res) => {
+  pool.getConnection((err, connection) => {
+    const productData = req.body;
+    const product = new Product(
+      productData.id,
+      productData.name,
+      productData.description,
+      productData.features,
+      productData.price,
+      productData.keywords,
+      productData.url,
+      productData.category,
+      productData.subcategory,
+      productData.images,
+      productData.salePrice
+    );
+    const imageString = JSON.stringify(product.images);
 
-  //   if (err) {
-  //     console.log("Error while getting product", err);
-  //     return res.status(500).json({ Error: "Error while getting product" });
-  //   }
-  //   if (result.affectedRows === 0) {
-  //     return res.status(404).json({ Error: "Product not found!" });
-  //   }
-  //   console.log("Successfully get product with id: ", id);
-  //   return res.status(200).json({ product: result[0] });
-  // });
+    connection.query(
+      "INSERT INTO products (id, name, description, features, price, keywords, url, category, subcategory, images, salePrice) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [
+        product.id,
+        product.name,
+        product.description,
+        product.features,
+        product.price,
+        product.keywords,
+        product.url,
+        product.category,
+        product.subcategory,
+        imageString,
+        product.salePrice,
+      ],
+      (error, results, fields) => {
+        if (error) {
+          console.log("Error inserting data:", error.message);
+          res.status(500).json({ error: "Internal server error!" });
+        } else {
+          console.log("Inserted: ", results.insertId);
+          res.status(200).json({ message: "Product inserted successufully!" });
+        }
+      }
+    );
+  });
 });
