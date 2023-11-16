@@ -12,7 +12,7 @@ class Product {
     images,
     salePrice
   ) {
-    this.id = id;
+    this.id = id || generateUniqueId();
     this.name = name;
     this.description = description;
     this.features = features;
@@ -23,6 +23,14 @@ class Product {
     this.subcategory = subcategory;
     this.images = images;
     this.salePrice = salePrice;
+  }
+
+  get(field) {
+    return this[field];
+  }
+
+  getById(id) {
+    return this.id === id;
   }
 }
 module.exports = Product;
