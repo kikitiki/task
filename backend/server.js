@@ -6,7 +6,8 @@ const { json } = require("body-parser");
 const mysql = require("mysql");
 const Product = require("./model/Product");
 
-const connection = mysql.createConnection({
+const pool = mysql.createPool({
+  connectionLimit: 10,
   host: "localhost",
   user: "root",
   password: "root",
@@ -22,42 +23,49 @@ app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
 
-// axios
-//   .get("https://30hills.com/api/products.json")
-//   .then((response) => {
-//     const data = response.data;
+axios
+  .get("https://30hills.com/api/products.json")
+  .then((response) => {
+    const data = response.data;
 
-//     connection.connect();
+    pool.getConnection((err, connection) => {
+      if (err) throw err;
 
-//     data.products.data.items.forEach((item) => {
-//       const imagesString = JSON.stringify(item.images);
-//       connection.query(
-//         "INSERT INTO products SET ?",
-//         { ...item, images: imagesString },
-//         (error, results, fields) => {
-//           if (error) throw error;
-//           console.log("Inserted:", results.insertId);
-//         }
-//       );
-//     });
+      data.products.data.items.forEach((item) => {
+        const imagesString = JSON.stringify(item.images);
+        connection.query(
+          "INSERT INTO products SET ? ON DUPLICATE KEY UPDATE id=id",
+          { ...item, images: imagesString },
+          (error, results, fields) => {
+            if (error) throw error;
+            console.log("Inserted:", results.insertId);
+          }
+        );
+      });
 
-//     connection.end();
-//   })
-//   .catch((error) => {
-//     console.error("Error fetching data:", error.message);
-//     connection.end();
-//   });
+      connection.release();
+    });
+  })
+  .catch((error) => {
+    console.error("Error fetching data:", error.message);
+  });
 
 app.get("/getAll", (req, res) => {
-  const getAllProducts = "SELECT * FROM products";
+  pool.getConnection((err, connection) => {
+    if (err) throw err;
 
-  connection.query(getAllProducts, (error, results) => {
-    if (error) throw error;
-    let message = "";
-    if (results === undefined || results.length == 0)
-      message = "Products table is empty";
-    else message = "Successfully retrvied all products";
+    const getAllProducts = "SELECT * FROM products";
 
-    return res.status(200).json({ product: results });
+    connection.query(getAllProducts, (error, results) => {
+      connection.release();
+
+      if (error) throw error;
+      let message = "";
+      if (results === undefined || results.length == 0)
+        message = "Products table is empty";
+      else message = "Successfully retrieved all products";
+
+      return res.status(200).json({ product: results });
+    });
   });
 });
