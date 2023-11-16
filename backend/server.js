@@ -69,3 +69,40 @@ app.get("/getAll", (req, res) => {
     });
   });
 });
+
+app.get("/product/:id", (req, res) => {
+  pool.getConnection((err, connection) => {
+    const id = req.params.id;
+    const getProduct = "SELECT * FROM products WHERE id = ?";
+
+    connection.query(getProduct, [id], (err, result) => {
+      connection.release();
+
+      if (err) {
+        console.log("Error while getting product", err);
+        return res.status(500).json({ Error: "Error while getting product" });
+      }
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ Error: "Product not found!" });
+      }
+      console.log("Successfully get product with id: ", id);
+      return res.status(200).json({ product: result[0] });
+    });
+  });
+  // const id = req.params.id;
+  // const getProduct = "SELECT * FROM products WHERE id = ?";
+
+  // connection.query(getProduct, [id], (err, result) => {
+  //   connection.release();
+
+  //   if (err) {
+  //     console.log("Error while getting product", err);
+  //     return res.status(500).json({ Error: "Error while getting product" });
+  //   }
+  //   if (result.affectedRows === 0) {
+  //     return res.status(404).json({ Error: "Product not found!" });
+  //   }
+  //   console.log("Successfully get product with id: ", id);
+  //   return res.status(200).json({ product: result[0] });
+  // });
+});
