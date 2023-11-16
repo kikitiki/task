@@ -160,3 +160,37 @@ app.delete("/delete/:id", (req, result) => {
     });
   });
 });
+
+app.get("/getSortByPriceAsc", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err;
+
+    const getAllProductsSortedByPriceAsc =
+      "SELECT price FROM products ORDER BY price ASC";
+
+    connection.query(getAllProductsSortedByPriceAsc, (err, result) => {
+      if (err) {
+        console.log("DB conn failed", err);
+      }
+      console.log("Successfully sorted products by asc");
+      return res.status(200).json({ result });
+    });
+  });
+});
+
+app.get("/getSortByPriceDesc", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err;
+
+    const getAllProductsSortedByPriceAsc =
+      "SELECT price FROM products ORDER BY price DESC";
+
+    connection.query(getAllProductsSortedByPriceAsc, (err, result) => {
+      if (err) {
+        console.log("DB conn failed", err);
+      }
+      console.log("Successfully sorted products by desc");
+      return res.status(200).json({ result });
+    });
+  });
+});
