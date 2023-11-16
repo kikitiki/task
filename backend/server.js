@@ -146,6 +146,7 @@ app.delete("/delete/:id", (req, result) => {
     const deleteSql = "DELETE FROM products where id = ?";
 
     connection.query(deleteSql, [id], (err, res) => {
+      connection.release();
       if (err) {
         console.log("Error while deleting product ", err);
         return result
@@ -161,6 +162,32 @@ app.delete("/delete/:id", (req, result) => {
   });
 });
 
+app.get("/searchByName", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err;
+
+    const searchTerm = req.query.term;
+
+    const searchSql =
+      "SELECT * FROM products WHERE name LIKE ? OR description LIKE ?";
+
+    console.log("SQL Query:", searchSql, [searchTerm]);
+    connection.query(
+      searchSql,
+      [`%${searchTerm}`, `%${searchTerm}`],
+      (err, result) => {
+        connection.release();
+        if (err) {
+          console.log("DB conn failed", err);
+        }
+        console.log("Successfully search by name");
+        console.log("Result:", result);
+        return res.status(200).json({ result });
+      }
+    );
+  });
+});
+
 app.get("/getSortByPriceAsc", (req, res) => {
   pool.getConnection((err, connection) => {
     if (err) throw err;
@@ -169,6 +196,7 @@ app.get("/getSortByPriceAsc", (req, res) => {
       "SELECT price FROM products ORDER BY price ASC";
 
     connection.query(getAllProductsSortedByPriceAsc, (err, result) => {
+      connection.release();
       if (err) {
         console.log("DB conn failed", err);
       }
@@ -186,6 +214,7 @@ app.get("/getSortByPriceDesc", (req, res) => {
       "SELECT price FROM products ORDER BY price DESC";
 
     connection.query(getAllProductsSortedByPriceAsc, (err, result) => {
+      connection.release();
       if (err) {
         console.log("DB conn failed", err);
       }
