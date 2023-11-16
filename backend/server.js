@@ -136,3 +136,27 @@ app.post("/product", (req, res) => {
     );
   });
 });
+
+app.delete("/delete/:id", (req, result) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err;
+
+    const id = req.params.id;
+
+    const deleteSql = "DELETE FROM products where id = ?";
+
+    connection.query(deleteSql, [id], (err, res) => {
+      if (err) {
+        console.log("Error while deleting product ", err);
+        return result
+          .status(500)
+          .json({ Error: "Error while deletin product" });
+      }
+      if (res.affectedRows === 0) {
+        return result.status(404).json({ Message: "Product not found" });
+      }
+      console.log("Successfully deleted product with id: ", id);
+      return result.status(200).json({ Status: "Success" });
+    });
+  });
+});
