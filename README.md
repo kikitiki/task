@@ -35,10 +35,15 @@ API Endpoints
    Method: GET
    Description: Search for products by name or description.
 
-7. Sort products by price
+7. Sort products by price descending order
    URL: http://localhost:3000/getSortByPriceDesc?sort=desc
    Method: GET
-   Description: Sort products by price in ascending or descending order.
+   Description: Sort products by price in descending order.
+
+8. Sort product by price ascending order
+   URL: http://localhost:3000/getSortByPriceAsc?sort=asc
+   Method: GET
+   Description: Sort products by price in ascending order.
 
    
    
