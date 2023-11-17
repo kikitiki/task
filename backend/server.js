@@ -162,9 +162,28 @@ app.delete("/delete/:id", (req, result) => {
   });
 });
 
+app.get("/filter", (req, res) => {
+  pool.getConnection((error, connection) => {
+    if (error) throw error;
+    const filterTerm = req.query.category;
+
+    const filterSql = "SELECT * FROM products WHERE category = ?";
+    console.log("SQL Query:", filterSql, [filterTerm]);
+
+    connection.query(filterSql, [filterTerm], (err, result) => {
+      connection.release();
+      if (err) {
+        console.log("DB connection failed", err);
+      }
+      console.log("Successfully filter product by category", filterTerm);
+      return res.status(200).json({ result });
+    });
+  });
+});
+
 app.get("/searchByName", (req, res) => {
-  pool.getConnection((err, connection) => {
-    if (err) throw err;
+  pool.getConnection((error, connection) => {
+    if (error) throw error;
 
     const searchTerm = req.query.term;
 
